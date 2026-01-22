@@ -77,7 +77,7 @@ scp ./output/myapp pi@192.168.1.100:/home/pi/
 
 ---
 
-## 6.5 Development
+## 6.4 Development
 
 ### Dockerfile for SCard Testing
 ```dockerfile
@@ -129,7 +129,7 @@ services:
 
 ---
 
-## 6.6 Multi-Architecture Builds
+## 6.5 Multi-Architecture Builds
 
 Build for multiple architectures at once (ARM, x86, etc.):
 
@@ -159,7 +159,7 @@ CMD ["python", "main.py"]
 
 ---
 
-## 6.7 Embedded CI/CD Pipeline
+## 6.6 Embedded CI/CD Pipeline
 
 ```yaml
 # .gitlab-ci.yml
