@@ -77,45 +77,7 @@ scp ./output/myapp pi@192.168.1.100:/home/pi/
 
 ---
 
-## 6.4 FPGA Development (Xilinx/Intel)
-
-### Dockerfile for Vivado (Xilinx)
-```dockerfile
-FROM ubuntu:20.04
-
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    libncurses5 \
-    libxtst6 \
-    libtinfo5 \
-    libx11-6
-
-# Vivado installer requires manual download and mount
-# Mount Vivado installation from host
-VOLUME /tools/Xilinx
-
-ENV PATH="/tools/Xilinx/Vivado/2022.2/bin:$PATH"
-
-WORKDIR /project
-```
-
-### docker-compose.yml for FPGA
-```yaml
-version: "3.8"
-services:
-  fpga-build:
-    build: .
-    volumes:
-      - ./hdl:/project/hdl           # VHDL/Verilog sources
-      - ./constraints:/project/xdc   # Constraint files
-      - ./output:/project/output     # Bitstreams
-      - /tools/Xilinx:/tools/Xilinx  # Vivado installation
-    command: vivado -mode batch -source build.tcl
-```
-
----
-
-## 6.5 Smart Card & USB Token Development
+## 6.5 Development
 
 ### Dockerfile for SCard Testing
 ```dockerfile
