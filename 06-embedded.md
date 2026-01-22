@@ -33,7 +33,7 @@
                                │
                                ▼ (Copy to device)
 ┌────────────────────────────────────────────────────────────────┐
-│  TARGET DEVICE (Raspberry Pi / FPGA / Smart Card Reader)       │
+│  TARGET DEVICE (Raspberry Pi , etc )       │
 │  - Runs ARM binary directly                                    │
 └────────────────────────────────────────────────────────────────┘
 ```
@@ -117,7 +117,7 @@ services:
 
 ## 6.5 Smart Card & USB Token Development
 
-### Dockerfile for Smart Card Testing
+### Dockerfile for SCard Testing
 ```dockerfile
 FROM debian:bullseye
 
@@ -150,7 +150,7 @@ docker run -it --rm \
   pcsc_scan
 ```
 
-### docker-compose.yml for Smart Card Testing
+### docker-compose.yml for SCard Testing
 ```yaml
 version: "3.8"
 services:
@@ -167,85 +167,7 @@ services:
 
 ---
 
-## 6.6 SPI/I2C/GPIO Testing
-
-### Raspberry Pi GPIO in Docker
-```yaml
-version: "3.8"
-services:
-  gpio-test:
-    image: python:3.11-slim
-    privileged: true
-    devices:
-      - /dev/spidev0.0:/dev/spidev0.0
-      - /dev/i2c-1:/dev/i2c-1
-      - /dev/gpiomem:/dev/gpiomem
-    volumes:
-      - ./code:/app
-    command: python3 /app/test_spi.py
-```
-
-### SPI Test Script
-```python
-# test_spi.py
-import spidev
-
-spi = spidev.SpiDev()
-spi.open(0, 0)  # Bus 0, Device 0
-spi.max_speed_hz = 1000000
-
-# Send and receive data
-response = spi.xfer2([0x00, 0x01, 0x02])
-print(f"SPI Response: {response}")
-
-spi.close()
-```
-
----
-
-## 6.7 TPM Development
-
-### Dockerfile for TPM Simulator
-```dockerfile
-FROM ubuntu:22.04
-
-# Install TPM tools
-RUN apt-get update && apt-get install -y \
-    tpm2-tools \
-    tpm2-abrmd \
-    libtss2-dev
-
-# TPM simulator
-RUN apt-get install -y swtpm
-
-WORKDIR /app
-```
-
-### docker-compose.yml with TPM
-```yaml
-version: "3.8"
-services:
-  tpm-simulator:
-    build: .
-    volumes:
-      - tpm-state:/var/lib/swtpm
-    command: swtpm socket --tpm2 --server type=tcp,port=2321
-
-  tpm-test:
-    build: .
-    depends_on:
-      - tpm-simulator
-    environment:
-      - TPM2TOOLS_TCTI=swtpm:host=tpm-simulator,port=2321
-    command: tpm2_getrandom 16
-
-volumes:
-  tpm-state:
-```
-
----
-
-## 6.8 Multi-Architecture Builds
+## 6.6 Multi-Architecture Builds
 
 Build for multiple architectures at once (ARM, x86, etc.):
 
@@ -275,7 +197,7 @@ CMD ["python", "main.py"]
 
 ---
 
-## 6.9 Embedded CI/CD Pipeline
+## 6.7 Embedded CI/CD Pipeline
 
 ```yaml
 # .gitlab-ci.yml
