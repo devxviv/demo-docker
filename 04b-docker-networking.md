@@ -359,10 +359,10 @@ try:
         user="postgres",
         password="mysecretpassword"
     )
-    print("✅ SUCCESS: Connected to the database!")
+    print(" SUCCESS: Connected to the database!")
     conn.close()
 except Exception as e:
-    print(f"❌ ERROR: Could not connect. {e}")
+    print(f" ERROR: Could not connect. {e}")
 ```
 
 ### 2. Create the `Dockerfile`
