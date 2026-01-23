@@ -8,18 +8,26 @@ This comprehensive training guide covers containerization and orchestration from
 
 ## Table of Contents
 
-| Part   | Topic                                              | Description                                 |
-| ------ | -------------------------------------------------- | ------------------------------------------- |
-| **1**  | [Linux Fundamentals](./01-linux-fundamentals.md)   | Namespaces, cgroups, essential commands     |
-| **2**  | [Docker Fundamentals](./02-docker-fundamentals.md) | Architecture, images, containers, OCI       |
-| **3**  | [Dockerfiles](./03-dockerfiles.md)                 | Writing Dockerfiles, multi-stage builds     |
-| **4**  | [Volumes](./04-volumes.md)                         | Data persistence, bind mounts, PostgreSQL   |
-| **5**  | [Docker Compose](./05-docker-compose.md)           | Multi-container applications                |
-| **6**  | [Embedded Systems](./06-embedded.md)               | FPGA, RPi, Smart Cards, TPM, SPI            |
-| **7**  | [Kubernetes Basics](./07-kubernetes.md)            | Architecture, pods, deployments, services   |
-| **8**  | [K8s Production](./08-kubernetes-production.md)    | Secrets, PVCs, Ingress, cloud vs on-premise |
-| **9**  | [Sample Files](./09-sample-files.md)               | Complete working examples                   |
-| **10** | [Quick Reference](./10-quick-reference.md)         | Command cheat sheet                         |
+| Part | Topic | Description |
+| ---- | ----- || Part   | Topic                                              | Description                                     |
+| ------ | -------------------------------------------------- | ----------------------------------------------- |
+| **1**  | [Linux Fundamentals](./01-linux-fundamentals.md)   | Namespaces, cgroups, essential commands         |
+| **2**  | [Docker Fundamentals](./02-docker-fundamentals.md) | Architecture, images, containers, OCI           |
+| **3**  | [Dockerfiles](./03-dockerfiles.md)                 | Writing Dockerfiles, multi-stage builds         |
+| **4**  | [Volumes](./04-volumes.md)                         | Data persistence, bind mounts, PostgreSQL       |
+| **4b** | [Docker Networking](./04b-docker-networking.md)    | Bridge, host, overlay, port mapping             |
+| **5**  | [Docker Compose](./05-docker-compose.md)           | Multi-container applications                    |
+| **6**  | [Embedded Systems](./06-embedded.md)               | FPGA, RPi, Smart Cards, TPM, SPI                |
+| **7**  | [Kubernetes Basics](./07-kubernetes.md)            | Architecture, pods, deployments, services       |
+| **7b** | [K8s Components](./07b-kubernetes-components.md)   | Deep dive: API Server, Scheduler, etcd, kubelet |
+| **7c** | [K8s Objects](./07c-kubernetes-objects.md)         | Pods, Deployments, StatefulSets, Jobs, CronJobs |
+| **7d** | [K8s Networking](./07d-kubernetes-networking.md)   | Services, DNS, Endpoints, Network Policies      |
+| **7e** | [K8s RBAC](./07e-kubernetes-rbac.md)               | ServiceAccounts, Roles, RoleBindings            |
+| **7f** | [K8s Storage & Scale](./07f-kubernetes-storage.md) | StorageClasses, PVCs, HPA, VPA, resources       |
+| **7g** | [Cloud vs On-Premise](./07g-onpremise-vs-cloud.md) | EKS/GKE vs kubeadm, MetalLB, local-path         |
+| **8**  | [K8s Production](./08-kubernetes-production.md)    | Secrets, Ingress, production patterns           |
+| **9**  | [Sample Files](./09-sample-files.md)               | Complete working examples                       |
+| **10** | [Quick Reference](./10-quick-reference.md)         | Command cheat sheet                             |  |
 
 ---
 

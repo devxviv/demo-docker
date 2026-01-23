@@ -8,12 +8,12 @@ Kubernetes (K8s) is a **container orchestration platform** that automates deploy
 DOCKER ALONE:                    KUBERNETES:
 ┌──────────────────┐            ┌─────────────────────────────────┐
 │  Single Machine  │            │  Cluster of Machines            │
-│  ┌────────────┐  │            │  ┌───────┐ ┌───────┐ ┌───────┐ │
-│  │ Container  │  │            │  │Node 1 │ │Node 2 │ │Node 3 │ │
-│  └────────────┘  │            │  │ □ □ □ │ │ □ □   │ │ □ □ □ │ │
-│                  │            │  └───────┘ └───────┘ └───────┘ │
-│  Manual scaling  │            │  Auto-scaling, self-healing    │
-│  Manual restart  │            │  Automatic restarts            │
+│  ┌────────────┐  │            │  ┌───────┐ ┌───────┐ ┌───────┐  │
+│  │ Container  │  │            │  │Node 1 │ │Node 2 │ │Node 3 │  │
+│  └────────────┘  │            │  │ □ □ □ │ │ □ □   │ │ □ □ □ │  │
+│                  │            │  └───────┘ └───────┘ └───────┘  │
+│  Manual scaling  │            │  Auto-scaling, self-healing     │
+│  Manual restart  │            │  Automatic restarts             │
 └──────────────────┘            └─────────────────────────────────┘
 ```
 
@@ -23,17 +23,17 @@ DOCKER ALONE:                    KUBERNETES:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         KUBERNETES CLUSTER                           │
-│                                                                       │
+│                         KUBERNETES CLUSTER                          │
+│                                                                     │
 │  ┌─────────────────────────────────────────────────────────────────┐│
-│  │                      CONTROL PLANE (Master)                      ││
+│  │                      CONTROL PLANE (Master)                     ││
 │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌────────────┐ ││
 │  │  │ API Server  │ │ Scheduler   │ │ Controller  │ │   etcd     │ ││
 │  │  │ (kubectl)   │ │ (placement) │ │ (healing)   │ │ (database) │ ││
 │  │  └─────────────┘ └─────────────┘ └─────────────┘ └────────────┘ ││
 │  └─────────────────────────────────────────────────────────────────┘│
-│                                │                                      │
-│                                ▼                                      │
+│                                │                                    │
+│                                ▼                                    │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐   │
 │  │   WORKER NODE 1  │  │   WORKER NODE 2  │  │   WORKER NODE 3  │   │
 │  │  ┌────────────┐  │  │  ┌────────────┐  │  │  ┌────────────┐  │   │
@@ -131,19 +131,19 @@ spec:
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
-│                         SERVICE TYPES                               │
-│                                                                     │
-│  ClusterIP (Default):           NodePort:              LoadBalancer:│
+│                         SERVICE TYPES                              │
+│                                                                    │
+│  ClusterIP (Default):           NodePort:             LoadBalancer:│
 │  ┌─────────────────────┐       ┌────────────────┐     ┌───────────┐│
 │  │ Internal only       │       │ Node:30001     │     │ Cloud LB  ││
-│  │ 10.96.x.x:80       │       │ Exposed on     │     │ External  ││
+│  │ 10.96.x.x:80        │       │ Exposed on     │     │ External  ││
 │  │                     │       │ all nodes      │     │ IP:80     ││
 │  └─────────────────────┘       └────────────────┘     └───────────┘│
 │          │                            │                      │     │
 │          ▼                            ▼                      ▼     │
-│  ┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐    │
-│  │                        PODS                               │    │
-│  └─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┘    │
+│  ┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐       │
+│  │                        PODS                             │       │
+│  └─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┘       │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
