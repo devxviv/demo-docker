@@ -6,12 +6,12 @@ Docker provides several network drivers for different use cases:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    DOCKER NETWORK TYPES                          │
-│                                                                  │
-│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌───────────┐│
-│  │   bridge   │  │    host    │  │    none    │  │  overlay  ││
-│  │  (default) │  │ (no isol.) │  │ (no net)   │  │ (swarm)   ││
-│  └────────────┘  └────────────┘  └────────────┘  └───────────┘│
+│                    DOCKER NETWORK TYPES                         │
+│                                                                 │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌───────────┐  │
+│  │   bridge   │  │    host    │  │    none    │  │  overlay  │  │
+│  │  (default) │  │ (no isol.) │  │ (no net)   │  │ (swarm)   │  │
+│  └────────────┘  └────────────┘  └────────────┘  └───────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -20,7 +20,6 @@ Docker provides several network drivers for different use cases:
 | **bridge**   | Yes - own subnet       | Default, most containers         |
 | **host**     | No - uses host network | High performance, port conflicts |
 | **none**     | Complete - no network  | Security, isolated processing    |
-| **overlay**  | Yes - across hosts     | Docker Swarm, multi-host         |
 | **macvlan**  | Yes - own MAC address  | Legacy apps needing real IPs     |
 
 ---
@@ -31,16 +30,16 @@ Containers on the same bridge network can communicate.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  HOST (172.17.0.1)                                            │
-│                                                               │
+│  HOST (172.17.0.1)                                           │
+│                                                              │
 │  ┌────────────────────────────────────────────────────────┐  │
 │  │  DOCKER BRIDGE NETWORK (172.17.0.0/16)                 │  │
-│  │                                                         │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │  │
-│  │  │ Container A │  │ Container B │  │ Container C │    │  │
-│  │  │ 172.17.0.2  │  │ 172.17.0.3  │  │ 172.17.0.4  │    │  │
-│  │  │ nginx:80    │  │ backend:8000│  │   db:5432   │    │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘    │  │
+│  │                                                        │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │  │
+│  │  │ Container A │  │ Container B │  │ Container C │     │  │
+│  │  │ 172.17.0.2  │  │ 172.17.0.3  │  │ 172.17.0.4  │     │  │
+│  │  │ nginx:80    │  │ backend:8000│  │   db:5432   │     │  │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘     │  │
 │  │         │                 │                │           │  │
 │  │         └─────────────────┼────────────────┘           │  │
 │  │                           │                            │  │
@@ -122,14 +121,14 @@ docker network connect network-b app1
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
-│  PORT MAPPING (-p flag)                                         │
-│                                                                 │
+│  PORT MAPPING (-p flag)                                        │
+│                                                                │
 │  External          Host          Container                     │
-│  ┌──────┐         ┌──────┐         ┌──────┐                   │
-│  │ :8080├────────▶│ :8080├────────▶│  :80 │                   │
-│  └──────┘         └──────┘         └──────┘                   │
+│  ┌──────┐         ┌──────┐         ┌──────┐                    │
+│  │ :8080├────────▶│ :8080├────────▶│  :80 │                    │
+│  └──────┘         └──────┘         └──────┘                    │
 │  Internet         Docker          nginx                        │
-│                   Host                                          │
+│                   Host                                         │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -161,11 +160,11 @@ Container uses host's network directly (no isolation).
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  HOST NETWORK MODE                                            │
-│                                                                │
+│  HOST NETWORK MODE                                           │
+│                                                              │
 │  ┌────────────────────────────────────────────────────────┐  │
 │  │  HOST (192.168.1.100)                                  │  │
-│  │                                                         │  │
+│  │                                                        │  │
 │  │  ┌─────────────────────────────────────────────────┐   │  │
 │  │  │  Container (--network host)                     │   │  │
 │  │  │  - Uses 192.168.1.100 directly                  │   │  │
@@ -283,17 +282,17 @@ networks:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  DOCKER COMPOSE MULTI-NETWORK                             │
-│                                                           │
-│  ┌──────────────┐     ┌──────────────┐     ┌──────────┐ │
-│  │     web      │────▶│     api      │────▶│    db    │ │
-│  │   (nginx)    │     │  (backend)   │     │(postgres)│ │
-│  └──────────────┘     └──────────────┘     └──────────┘ │
-│         │                     │                    │     │
-│    ┌────┴────┐           ┌────┴────┐         ┌────┴────┐│
-│    │frontend │           │frontend │         │ backend ││
-│    │ network │           │ backend │         │ network ││
-│    └─────────┘           │ networks│         └─────────┘│
+│  DOCKER COMPOSE MULTI-NETWORK                            │
+│                                                          │
+│  ┌──────────────┐     ┌──────────────┐     ┌──────────┐  │
+│  │     web      │────▶│     api      │────▶│    db    │  │
+│  │   (nginx)    │     │  (backend)   │     │(postgres)│  │
+│  └──────────────┘     └──────────────┘     └──────────┘  │
+│         │                     │                   │      │
+│    ┌────┴────┐           ┌────┴────┐         ┌────┴────┐ │
+│    │frontend │           │frontend │         │ backend │ │
+│    │ network │           │ backend │         │ network │ │
+│    └─────────┘           │ networks│         └─────────┘ │
 │                          └─────────┘                     │
 └──────────────────────────────────────────────────────────┘
 ```
