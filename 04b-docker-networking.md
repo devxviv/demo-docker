@@ -335,5 +335,102 @@ docker exec web curl http://api:8000/healthz
 ```
 
 ---
+Here is the absolute simplest way to demo this using a tiny Python script that just tries to say "Hello" to the database.
+
+### 1. Create the Python Script (`app.py`)
+
+Save this code in a folder. It tries to connect to the database and prints the result.
+
+Python
+
+```python
+import time
+import psycopg2
+
+# Wait for DB to start up
+print("Waiting for database...")
+time.sleep(5) 
+
+try:
+    # Connect to "postgres" (the container name serves as the host address)
+    conn = psycopg2.connect(
+        host="postgres",
+        database="postgres",
+        user="postgres",
+        password="mysecretpassword"
+    )
+    print("✅ SUCCESS: Connected to the database!")
+    conn.close()
+except Exception as e:
+    print(f"❌ ERROR: Could not connect. {e}")
+```
+
+### 2. Create the `Dockerfile`
+
+Save this file named `Dockerfile` (no extension) in the same folder.
+
+Dockerfile
+
+```Dockerfile
+FROM python:3.9-slim
+RUN pip install psycopg2-binary
+COPY app.py .
+CMD ["python", "app.py"]
+```
+
+### 3. Run the Commands
+
+Open your terminal in that folder and run these 4 commands in order:
+
+**Step A: Build your Python image**
+
+Bash
+
+```
+docker build -t simple-python-app .
+```
+
+**Step B: Create the network**
+
+Bash
+
+```
+docker network create my-net
+```
+
+**Step C: Run the Database**
+
+Bash
+
+```
+docker run -d \
+  --network my-net \
+  --name postgres \
+  -e POSTGRES_PASSWORD=mysecretpassword \
+  postgres:15
+```
+
+**Step D: Run your Python App**
+
+Bash
+
+```
+docker run --rm \
+  --network my-net \
+  --name my-script \
+  simple-python-app
+```
+
+### 4. What to Expect
+
+If it works, terminal will simply print:
+
+`Waiting for database...`
+
+`✅ SUCCESS: Connected to the database!`
+
+**Why this works:** Because both containers are on `my-net`, the Python script can reach the database just by using the container name `postgres` as the hostname.
+
+
 
 **Next:** [Part 5: Docker Compose](./05-docker-compose.md)
