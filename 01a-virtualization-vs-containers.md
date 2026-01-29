@@ -1,4 +1,4 @@
-# Virtualization vs Containerization: The Evolution Story
+# Virtualization vs Containerization
 
 Understanding the foundation of modern containerization technology.
 
@@ -18,7 +18,7 @@ Understanding the foundation of modern containerization technology.
 
 ---
 
-## The Evolution Journey
+## The Evolution 
 
 The way we deploy applications has evolved significantly over the past decades.
 
@@ -388,7 +388,7 @@ Namespaces create isolated views of system resources.
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-#### Practical Demo: See Namespaces in Action
+#### Namespaces in Action
 
 ```bash
 # On a Linux machine (or WSL on Windows, macOS with Docker)
@@ -445,7 +445,7 @@ Cgroups limit and monitor resource usage.
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-#### Practical Demo: Setting Resource Limits
+#### Setting Resource Limits
 
 ```bash
 # Run container with memory limit
@@ -507,7 +507,7 @@ Union filesystems allow multiple layers to be stacked together.
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-#### Practical Demo: Inspect Image Layers
+#### Inspect Image Layers
 
 ```bash
 # Pull an image
@@ -794,12 +794,3 @@ Containerization virtualizes OS (shared kernel)
 **Alternatives**:
 - Podman, containerd, CRI-O, LXC/LXD
 
-### What's Next
-
-Now that you understand the fundamentals:
-1. Learn Docker commands and image building
-2. Understand container networking
-3. Explore multi-container applications
-4. Master Kubernetes for orchestration
-
-The foundation is set. Let's start building!

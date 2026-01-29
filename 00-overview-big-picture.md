@@ -579,7 +579,7 @@ CI/CD automates the **build, test, and deployment** pipeline.
 | **Visibility**      | Track all changes and deployments       |
 | **Developer Focus** | Less time on deployment, more on coding |
 
-### Combined Power
+### Combined 
 
 ```
 Docker          Packages your app consistently
@@ -600,15 +600,4 @@ This enables:
 
 ---
 
-## What's Next
 
-Now that you understand the big picture, we'll dive into each component:
-
-1. **Docker Fundamentals**: How containerization works
-2. **Building Images**: Creating Docker containers
-3. **Networking**: How containers communicate
-4. **Kubernetes Basics**: Pods, Services, Deployments
-5. **Production Patterns**: Best practices for real deployments
-6. **CI/CD Integration**: Automating the entire pipeline
-
-Each topic builds on the previous one, taking you from beginner to production-ready.

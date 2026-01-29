@@ -63,20 +63,9 @@ Founded in 2015 by Docker, CoreOS, Google, and others to create open industry st
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-### Analogy
 
 ```
-OCI for Containers  =  USB Standard for Devices
-
-Before USB:
-• Every device had different connectors
-• Chaos, incompatibility
-
-After USB:
-• Standard connector
-• Any USB device works in any USB port
-
-Similarly, OCI ensures:
+OCI ensures:
 • Any container image works with any OCI runtime
 • Build once, run anywhere (truly!)
 ```
@@ -489,7 +478,7 @@ User runs: docker run nginx
 
 ## Why Kubernetes Uses containerd
 
-###  The Docker Deprecation Story
+###  Docker Deprecation 
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -584,7 +573,7 @@ User runs: docker run nginx
 **A: YES!** For local development, Docker is still great. Just know that in production Kubernetes, containerd runs those images.
 
 **Q: Do I need to learn containerd?**  
-**A: Not really.** For daily work, kubectl is enough. Understanding the architecture helps, though.
+**A: Not really.** For daily work, kubectl is enough. Understanding the architecture helps.
 
 ```
 Developer Workflow (unchanged):
@@ -732,16 +721,3 @@ Your Docker image runs perfectly in Kubernetes,
 even though Kubernetes doesn't use Docker!
 ```
 
-### What's Next
-
-Now that you understand:
-- How containers are standardized (OCI)
-- What containerd does
-- Why Kubernetes uses containerd
-
-You're ready to:
-1. Build Docker images (Dockerfiles)
-2. Work with Kubernetes confidently
-3. Understand production container platforms
-
-The pieces all fit together!
