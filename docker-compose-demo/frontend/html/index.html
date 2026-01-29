@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Docker Demo</title>
+</head>
+
+<body>
+    <h1>Simple Docker Demo</h1>
+
+    <!-- Input -->
+    <input type="text" id="itemName" placeholder="Enter item name">
+    <button onclick="addItem()">Add to DB</button>
+
+    <!-- List -->
+    <h3>Items from Database:</h3>
+    <ul id="itemList"></ul>
+
+    <script>
+        // Load items on page load
+        loadItems();
+
+        async function loadItems() {
+            let res = await fetch('/api/items');
+            let items = await res.json();
+            document.getElementById('itemList').innerHTML =
+                items.map(item => `<li>${item}</li>`).join('');
+        }
+
+        async function addItem() {
+            let name = document.getElementById('itemName').value;
+            await fetch(`/api/items?name=${name}`, { method: 'POST' });
+            document.getElementById('itemName').value = '';
+            loadItems(); // Refresh list
+        }
+    </script>
+</body>
+
+</html>

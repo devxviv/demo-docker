@@ -1,0 +1,42 @@
+services:
+  # 1. Web Server (Frontend)
+  frontend:
+    build: ./frontend
+    ports: 
+      - "8081:80"
+    depends_on: 
+      - backend
+    networks:      # <--- Attach to network
+      - demo-net
+
+  # 2. Logic (Backend)
+  backend:
+    build: ./backend
+    depends_on: 
+      - database
+    environment:
+      DB_HOST: database
+      DB_USER: user
+      DB_PASS: password
+      DB_NAME: demodb
+    networks:      # <--- Attach to network
+      - demo-net
+
+  # 3. Storage (Database)
+  database:
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: demodb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:      # <--- Attach to network
+      - demo-net
+
+volumes:
+  db-data:
+
+networks:         # <--- Define network
+  demo-net:
+    driver: bridge
