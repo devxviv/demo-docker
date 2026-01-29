@@ -900,4 +900,4 @@ RUNNING POD (one or more containers)
 
 ---
 
-This guide should help you explain Docker and Kubernetes architecture to others with complete clarity!
+
