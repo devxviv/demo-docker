@@ -771,9 +771,7 @@ Complete guide to understanding Docker and Kubernetes architecture, component in
 
 ---
 
-## Real-World Example: Your SoftToken App
-
-### Complete Flow on Kubernetes
+## Complete Flow on Kubernetes
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
