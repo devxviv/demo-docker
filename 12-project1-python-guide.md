@@ -64,7 +64,63 @@ exit
 
 ## Step 3: Create Namespace & Infrastructure
 
-We need a Namespace for isolation, a Secret for DB passwords, and a PVC for DB storage.
+We need a Namespace for isolation, a Secret for DB passwords, a PVC for DB storage, and a ConfigMap.
+
+### 3.1 Namespace
+```yaml
+# k8s/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: python-demo
+  labels:
+    project: python-demo
+```
+
+### 3.2 Secret (Postgres Credentials)
+```yaml
+# k8s/db-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-db-secret
+  namespace: python-demo
+type: Opaque
+data:
+  # Values are base64 encoded: 'user' and 'password123'
+  POSTGRES_USER: dXNlcg==
+  POSTGRES_PASSWORD: cGFzc3dvcmQxMjM=
+```
+
+### 3.3 PersistentVolumeClaim (DB Storage)
+```yaml
+# k8s/postgres-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: python-demo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+```
+
+### 3.4 ConfigMap (App Settings)
+```yaml
+# k8s/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: python-backend-config
+  namespace: python-demo
+data:
+  APP_NAME: "python-backend"
+  APP_VERSION: "1.0.0"
+  APP_COLOR: "#6C63FF"
+```
 
 ```bash
 kubectl apply -f k8s/namespace.yaml
@@ -76,6 +132,67 @@ kubectl apply -f k8s/configmap.yaml
 ---
 
 ## Step 4: Deploy Database
+
+### 4.1 PostgreSQL Deployment
+```yaml
+# k8s/postgres-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-db
+  namespace: python-demo
+spec:
+  selector:
+    matchLabels:
+      app: postgres-db
+  template:
+    metadata:
+      labels:
+        app: postgres-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "demodb"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-db-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-db-secret
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+```
+
+### 4.2 PostgreSQL Service (ClusterIP)
+```yaml
+# k8s/postgres-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+  namespace: python-demo
+spec:
+  selector:
+    app: postgres-db
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+```
 
 ```bash
 kubectl apply -f k8s/postgres-deployment.yaml
@@ -89,6 +206,107 @@ kubectl get pods -n python-demo -w
 
 ## Step 5: Deploy Backend
 
+### 5.1 Backend Deployment
+```yaml
+# k8s/backend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-backend
+  namespace: python-demo
+  labels:
+    app: python-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: python-backend
+  template:
+    metadata:
+      labels:
+        app: python-backend
+    spec:
+      containers:
+        - name: fastapi
+          image: python-backend:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: python-backend-config
+          env:
+            - name: DB_HOST
+              value: "postgres-svc"
+            - name: DB_NAME
+              value: "demodb"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-db-secret
+                  key: POSTGRES_USER
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-db-secret
+                  key: POSTGRES_PASSWORD
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+```
+
+### 5.2 Backend Service
+```yaml
+# k8s/backend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-backend-svc
+  namespace: python-demo
+  labels:
+    app: python-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: python-backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+```
+
 ```bash
 kubectl apply -f k8s/backend-deployment.yaml
 kubectl apply -f k8s/backend-service.yaml
@@ -100,6 +318,68 @@ kubectl get pods -n python-demo -o wide
 ---
 
 ## Step 6: Deploy Frontend
+
+### 6.1 Frontend Deployment
+```yaml
+# k8s/frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-frontend
+  namespace: python-demo
+  labels:
+    app: python-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-frontend
+  template:
+    metadata:
+      labels:
+        app: python-frontend
+    spec:
+      containers:
+        - name: nginx
+          image: python-frontend:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 30m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+```
+
+### 6.2 Frontend Service
+```yaml
+# k8s/frontend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-frontend-svc
+  namespace: python-demo
+  labels:
+    app: python-frontend
+spec:
+  type: NodePort
+  selector:
+    app: python-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080 # access via http://<NODE_IP>:30080
+      protocol: TCP
+```
 
 ```bash
 kubectl apply -f k8s/frontend-deployment.yaml
