@@ -23,6 +23,66 @@
 
 ---
 
+## Architecture Flow
+
+```text
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                           YOUR LAPTOP / BROWSER                               │
+│                           http://<node-ip>:30080                              │
+└──────────────────────────────────────┬────────────────────────────────────────┘
+                                       │ 1. External Request
+                                       ▼
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                      KUBERNETES CLUSTER (Namespace: python-demo)              │
+│                                                                               │
+│  ┌─────────────────────────┐                                                  │
+│  │   python-frontend-svc   │ 2. NodePort (30080) routes to Nginx              │
+│  │   (Type: NodePort)      │                                                  │
+│  └───────────┬─────────────┘                                                  │
+│              │                                                                │
+│              ▼                                                                │
+│  ┌─────────────────────────┐                                                  │
+│  │   python-frontend Pod   │ 3. Nginx sees /api/ and proxies request to:      │
+│  │   (Nginx / Port 80)     │    http://python-backend-svc:8000                │
+│  └───────────┬─────────────┘                                                  │
+│              │                                                                │
+│              ▼                                                                │
+│  ┌─────────────────────────┐                                                  │
+│  │   python-backend-svc    │ 4. ClusterIP resolves name, load balances        │
+│  │   (Type: ClusterIP)     │    across backend Pod replicas                   │
+│  └─────────┬─────┬─────────┘                                                  │
+│            │     │                                                            │
+│            ▼     ▼                                                            │
+│  ┌─────────┴┐  ┌─┴─────────┐ 5. FastAPI app needs DB data, looks up           │
+│  │ backend  │  │ backend   │    host 'postgres-svc'                           │
+│  │ Pod 1    │  │ Pod 2     │    (Injects ConfigMap & Secret env vars)         │
+│  │ (:8000)  │  │ (:8000)   │                                                  │
+│  └────┬─────┘  └─────┬─────┘                                                  │
+│       │              │                                                        │
+│       └──────┬───────┘                                                        │
+│              ▼                                                                │
+│  ┌─────────────────────────┐                                                  │
+│  │      postgres-svc       │ 6. ClusterIP routes DB traffic to Postgres Pod   │
+│  │   (Type: ClusterIP)     │                                                  │
+│  └───────────┬─────────────┘                                                  │
+│              │                                                                │
+│              ▼                                                                │
+│  ┌─────────────────────────┐ 7. PostgreSQL process handles queries            │
+│  │      postgres-db        │    (Uses db-secret for auth)                     │
+│  │    Pod (:5432)          │                                                  │
+│  └───────────┬─────────────┘                                                  │
+│              │                                                                │
+│              ▼                                                                │
+│  ┌─────────────────────────┐ 8. Data is saved to persistent storage           │
+│  │      postgres-pvc       │    (Survives pod restarts)                       │
+│  │ (PersistentVolumeClaim) │                                                  │
+│  └─────────────────────────┘                                                  │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Step 1: Build Docker Images (on controlplane)
 
 ```bash
