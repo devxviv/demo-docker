@@ -28,55 +28,52 @@
 ```text
 ┌───────────────────────────────────────────────────────────────────────────────┐
 │                           YOUR LAPTOP / BROWSER                               │
-│                           http://<node-ip>:30080                              │
+│                           http://<controlplane-ip>:30080                      │
 └──────────────────────────────────────┬────────────────────────────────────────┘
-                                       │ 1. External Request
+                                       │ 1. External Request hits NodePort
                                        ▼
 ┌───────────────────────────────────────────────────────────────────────────────┐
 │                      KUBERNETES CLUSTER (Namespace: python-demo)              │
 │                                                                               │
-│  ┌─────────────────────────┐                                                  │
-│  │   python-frontend-svc   │ 2. NodePort (30080) routes to Nginx              │
-│  │   (Type: NodePort)      │                                                  │
-│  └───────────┬─────────────┘                                                  │
-│              │                                                                │
-│              ▼                                                                │
-│  ┌─────────────────────────┐                                                  │
-│  │   python-frontend Pod   │ 3. Nginx sees /api/ and proxies request to:      │
-│  │   (Nginx / Port 80)     │    http://python-backend-svc:8000                │
-│  └───────────┬─────────────┘                                                  │
-│              │                                                                │
-│              ▼                                                                │
-│  ┌─────────────────────────┐                                                  │
-│  │   python-backend-svc    │ 4. ClusterIP resolves name, load balances        │
-│  │   (Type: ClusterIP)     │    across backend Pod replicas                   │
-│  └─────────┬─────┬─────────┘                                                  │
-│            │     │                                                            │
-│            ▼     ▼                                                            │
-│  ┌─────────┴┐  ┌─┴─────────┐ 5. FastAPI app needs DB data, looks up           │
-│  │ backend  │  │ backend   │    host 'postgres-svc'                           │
-│  │ Pod 1    │  │ Pod 2     │    (Injects ConfigMap & Secret env vars)         │
-│  │ (:8000)  │  │ (:8000)   │                                                  │
-│  └────┬─────┘  └─────┬─────┘                                                  │
-│       │              │                                                        │
-│       └──────┬───────┘                                                        │
-│              ▼                                                                │
-│  ┌─────────────────────────┐                                                  │
-│  │      postgres-svc       │ 6. ClusterIP routes DB traffic to Postgres Pod   │
-│  │   (Type: ClusterIP)     │                                                  │
-│  └───────────┬─────────────┘                                                  │
-│              │                                                                │
-│              ▼                                                                │
-│  ┌─────────────────────────┐ 7. PostgreSQL process handles queries            │
-│  │      postgres-db        │    (Uses db-secret for auth)                     │
-│  │    Pod (:5432)          │                                                  │
-│  └───────────┬─────────────┘                                                  │
-│              │                                                                │
-│              ▼                                                                │
-│  ┌─────────────────────────┐ 8. Data is saved to persistent storage           │
-│  │      postgres-pvc       │    (Survives pod restarts)                       │
-│  │ (PersistentVolumeClaim) │                                                  │
-│  └─────────────────────────┘                                                  │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │                            controlplane Node                            │  │
+│  │  (Runs API Server, Scheduler, etc. - usually no user pods here)         │  │
+│  │                                                                         │  │
+│  │  ┌─────────────────────────┐ 2. Service (NodePort) is open on ALL nodes.│  │
+│  │  │   python-frontend-svc   │    Traffic enters controlplane and is      │  │
+│  │  │   (NodePort: 30080)     │    routed across the cluster network.      │  │
+│  └──┴───────────┬─────────────┴────────────────────────────────────────────┘  │
+│                 │                                                             │
+│  ┌──────────────▼──────────────────────────────────────────────────────────┐  │
+│  │                                node01 Node                              │  │
+│  │                                                                         │  │
+│  │  ┌─────────────────────────┐ 3. Routes to the Nginx Pod                  │  │
+│  │  │   python-frontend Pod   │    (IP: 192.168.1.12)                      │  │
+│  │  │   (Nginx / Port 80)     │                                            │  │
+│  │  └───────────┬─────────────┘                                            │  │
+│  │              │                                                          │  │
+│  │  ┌───────────▼─────────────┐ 4. Proxies to ClusterIP Service             │  │
+│  │  │   python-backend-svc    │    (10.100.45.54:8000)                     │  │
+│  │  └─────────┬─────┬─────────┘                                            │  │
+│  │            │     │                                                      │  │
+│  │      ┌─────▼┐    ▼─────┐     5. Load balances across replicas           │  │
+│  │      │backend│    │backend│       (IP: 192.168.1.51)                    │  │
+│  │      │ Pod 1 │    │ Pod 2 │       (IP: 192.168.1.118)                   │  │
+│  │      └────┬──┘    └──┬────┘                                             │  │
+│  │           │          │                                                  │  │
+│  │      ┌────▼──────────▼─────┐ 6. Backend pods call DB service            │  │
+│  │      │     postgres-svc    │    (10.102.241.179:5432)                   │  │
+│  │      └───────────┬─────────┘                                            │  │
+│  │                  │                                                      │  │
+│  │      ┌───────────▼─────────┐ 7. Routes to Database Pod                  │  │
+│  │      │     postgres-db     │    (IP: 192.168.1.10)                      │  │
+│  │      │     Pod (:5432)     │                                            │  │
+│  │      └───────────┬─────────┘                                            │  │
+│  │                  │                                                      │  │
+│  │      ┌───────────▼─────────┐ 8. Data persisted via PVC                  │  │
+│  │      │     postgres-pvc    │    (Stored on node01 disk)                 │  │
+│  │      └─────────────────────┘                                            │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
 │                                                                               │
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
