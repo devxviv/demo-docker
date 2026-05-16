@@ -533,7 +533,7 @@ kubectl delete namespace python-demo
 |---------|---------|--------|
 | Namespace isolation | `-n python-demo` | Resources scoped to namespace |
 | ConfigMap injection | `envFrom` in deployment | Externalize config from code |
-| Image handling | `ctr -n k8s.io` | Docker ? containerd stores |
+| Image handling | `ctr -n k8s.io` | Docker != containerd stores |
 | Service discovery | `http://python-backend-svc:8000` | CoreDNS resolves service name |
 | Load balancing | Multiple backend replicas | Service distributes traffic |
 | NodePort | External access | `node-ip:30080` accessible from outside |
