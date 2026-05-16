@@ -1,14 +1,14 @@
-# Kubernetes Training Session Plan (2 Hours)
+# Kubernetes
 
 ## Session Flow Overview
 
-| Time | Section | Approach |
-|------|---------|----------|
-| 0:00 - 0:30 | Kubernetes Architecture Mental Model | Theory + Visualization |
-| 0:30 - 1:00 | Imperative Commands (Pod, Deployment, Service) | Live Demo |
-| 1:00 - 1:30 | Declarative YAML (All K8s Objects) | YAML Walkthrough |
-| 1:30 - 1:45 | How to Read Official Docs | Reference Skills |
-| 1:45 - 2:00 | Project Demo on Killercoda | Hands-on Deployment |
+| Section | Approach |
+|---------|----------|
+| Kubernetes Architecture Mental Model | Theory + Visualization |
+| Imperative Commands (Pod, Deployment, Service) | Demo |
+| Declarative YAML (All K8s Objects) | YAML Walkthrough |
+| How to Read Official Docs | Reference Skills |
+| Project Demo on Killercoda | Deployment |
 
 ---
 
@@ -560,9 +560,9 @@ spec:
 
 ---
 
-# PART 5: Project Demo on Killercoda - Deploy Python App
+# PART 5: Deploy Python App
 
-## 5.1 Pre-Demo: Verify Killercoda Environment
+## 5.1 Verify Environment
 
 ```bash
 # On controlplane
@@ -756,11 +756,3 @@ kubectl get events -n <ns> --sort-by='.lastTimestamp'
 
 ---
 
-# Session Complete Checklist
-
-- [x] Kubernetes architecture explained
-- [x] Imperative commands demonstrated
-- [x] Declarative YAML explained
-- [x] All K8s objects covered (Pod, Deploy, Svc, ConfigMap, Secret, NS)
-- [x] Official docs navigation shown
-- [x] Project demo completed on Killercoda
