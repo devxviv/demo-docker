@@ -191,23 +191,7 @@ data:
   POSTGRES_PASSWORD: cGFzc3dvcmQxMjM=
 ```
 
-### 3.3 PersistentVolumeClaim (DB Storage)
-```yaml
-# k8s/postgres-pvc.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: postgres-pvc
-  namespace: python-demo
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-```
-
-### 3.4 ConfigMap (App Settings)
+### 3.3 ConfigMap (App Settings)
 ```yaml
 # k8s/configmap.yaml
 apiVersion: v1
@@ -221,10 +205,11 @@ data:
   APP_COLOR: "#6C63FF"
 ```
 
+> **Note:** No separate PVC file needed — the StatefulSet creates and manages its own PVC automatically.
+
 ```bash
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/db-secret.yaml
-kubectl apply -f k8s/postgres-pvc.yaml
 kubectl apply -f k8s/configmap.yaml
 ```
 
@@ -232,15 +217,22 @@ kubectl apply -f k8s/configmap.yaml
 
 ## Step 4: Deploy Database
 
-### 4.1 PostgreSQL Deployment
+### 4.1 PostgreSQL StatefulSet
+
+> **Why StatefulSet?** Deployments treat pods as interchangeable. Databases are not — they need a stable identity, stable storage binding, and ordered startup. StatefulSet provides all three. It also auto-creates and manages the PVC (`postgres-storage-postgres-db-0`), so no separate PVC file is needed.
+
 ```yaml
-# k8s/postgres-deployment.yaml
+# k8s/postgres-deployment.yaml  (kind is now StatefulSet)
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: postgres-db
   namespace: python-demo
+  labels:
+    app: postgres-db
 spec:
+  serviceName: postgres-svc   # must match the headless Service below
+  replicas: 1
   selector:
     matchLabels:
       app: postgres-db
@@ -249,6 +241,8 @@ spec:
       labels:
         app: postgres-db
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: node01   # pin to node01 (local storage is node-specific)
       containers:
         - name: postgres
           image: postgres:16-alpine
@@ -267,16 +261,48 @@ spec:
                 secretKeyRef:
                   name: postgres-db-secret
                   key: POSTGRES_PASSWORD
+            # PGDATA must be a subdirectory — local-path volumes may contain
+            # a lost+found dir that blocks postgres init at the mount root.
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: postgres-storage
-          persistentVolumeClaim:
-            claimName: postgres-pvc
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "$(POSTGRES_DB)"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "$(POSTGRES_DB)"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+  # StatefulSet auto-creates PVC named: postgres-storage-postgres-db-0
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
 ```
 
-### 4.2 PostgreSQL Service (ClusterIP)
+### 4.2 PostgreSQL Service (Headless)
+
+> **Why `clusterIP: None`?** StatefulSet requires a headless service to give each pod a stable DNS entry: `postgres-db-0.postgres-svc.python-demo.svc.cluster.local`. The backend still connects via `postgres-svc:5432` — CoreDNS resolves it directly to the pod IP.
+
 ```yaml
 # k8s/postgres-service.yaml
 apiVersion: v1
@@ -284,21 +310,30 @@ kind: Service
 metadata:
   name: postgres-svc
   namespace: python-demo
+  labels:
+    app: postgres-db
 spec:
+  clusterIP: None   # headless — required for StatefulSet
   selector:
     app: postgres-db
   ports:
-    - port: 5432
+    - name: postgres
+      port: 5432
       targetPort: 5432
   type: ClusterIP
 ```
 
 ```bash
-kubectl apply -f k8s/postgres-deployment.yaml
+# Service MUST be created before the StatefulSet
 kubectl apply -f k8s/postgres-service.yaml
+kubectl apply -f k8s/postgres-deployment.yaml
 
-# Wait for DB to be running
+# Wait for pod postgres-db-0 to be Running
 kubectl get pods -n python-demo -w
+
+# Verify auto-created PVC
+kubectl get pvc -n python-demo
+kubectl get pv
 ```
 
 ---

@@ -1,9 +1,13 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: postgres-db
   namespace: python-demo
+  labels:
+    app: postgres-db
 spec:
+  serviceName: postgres-svc   # must match the headless Service name
+  replicas: 1
   selector:
     matchLabels:
       app: postgres-db
@@ -12,6 +16,8 @@ spec:
       labels:
         app: postgres-db
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: node01   # keep DB on node01 (local storage is node-specific)
       containers:
         - name: postgres
           image: postgres:16-alpine
@@ -30,10 +36,43 @@ spec:
                 secretKeyRef:
                   name: postgres-db-secret
                   key: POSTGRES_PASSWORD
+            # PGDATA must point to a subdirectory — postgres refuses to init
+            # if the mountPath itself contains a "lost+found" dir (common with
+            # local-path-provisioner / hostPath volumes).
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: postgres-storage
-          persistentVolumeClaim:
-            claimName: postgres-pvc
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "$(POSTGRES_DB)"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "$(POSTGRES_DB)"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+  # StatefulSet manages PVCs automatically — one per replica, stable forever.
+  # Name becomes: postgres-storage-postgres-db-0
+  # (no separate postgres-pvc.yaml needed)
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi   # fine for learning; use 20Gi+ for real apps

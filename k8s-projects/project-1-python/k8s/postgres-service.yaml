@@ -3,10 +3,19 @@ kind: Service
 metadata:
   name: postgres-svc
   namespace: python-demo
+  labels:
+    app: postgres-db
 spec:
+  # Headless service (clusterIP: None) is REQUIRED for StatefulSets.
+  # It gives each pod a stable DNS entry:
+  #   postgres-db-0.postgres-svc.python-demo.svc.cluster.local
+  # The backend still connects using just "postgres-svc:5432" which
+  # CoreDNS resolves to the pod IP directly.
+  clusterIP: None
   selector:
     app: postgres-db
   ports:
-    - port: 5432
+    - name: postgres
+      port: 5432
       targetPort: 5432
   type: ClusterIP
