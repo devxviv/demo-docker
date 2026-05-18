@@ -166,6 +166,12 @@ kubectl apply -f k8s/frontend-service.yaml
 # In Killercoda, patch the controller to use port 80 directly on the host:
 # kubectl patch deployment ingress-nginx-controller -n ingress-nginx --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/hostNetwork", "value": true}]'
 
+# If Port 80 in UI still doesn't work (Pod is on wrong node or Pending):
+# 1. Force to controlplane:
+# kubectl patch deployment ingress-nginx-controller -n ingress-nginx --type='json' -p='[{"op": "add", "path": "/spec/template/spec/nodeSelector", "value": {"kubernetes.io/hostname": "controlplane"}}]'
+# 2. Add Toleration:
+# kubectl patch deployment ingress-nginx-controller -n ingress-nginx --type='json' -p='[{"op": "add", "path": "/spec/template/spec/tolerations", "value": [{"key": "node-role.kubernetes.io/control-plane", "operator": "Exists", "effect": "NoSchedule"}]}]'
+
 kubectl apply -f k8s/ingress.yaml
 ```
 

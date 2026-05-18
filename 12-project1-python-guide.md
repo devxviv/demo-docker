@@ -525,6 +525,31 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main
 # Troubleshooting Killercoda: If port 80 is not reachable, patch the controller 
 # to use the host network (this binds port 80 directly to the node):
 kubectl patch deployment ingress-nginx-controller -n ingress-nginx --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/hostNetwork", "value": true}]'
+
+---
+
+## 🛠 Advanced Ingress Troubleshooting (Multi-Node Clusters)
+
+In environments like Killercoda with multiple nodes, you might face issues where the Ingress is "Running" but you can't reach it. Here is the expert fix:
+
+### 1. Pin Ingress to the Controlplane
+Killercoda's "Port 80" UI button always routes to the `controlplane` node. If your Ingress pod is running on `node01`, the traffic will never find it. Use a **NodeSelector** to force it to the right place:
+```bash
+kubectl patch deployment ingress-nginx-controller -n ingress-nginx --type='json' -p='[{"op": "add", "path": "/spec/template/spec/nodeSelector", "value": {"kubernetes.io/hostname": "controlplane"}}]'
+```
+
+### 2. Add Tolerations (Fix "Pending" State)
+The `controlplane` node is "Tainted" (it has a "Keep Out" sign for regular pods). If your Ingress pod stays in **Pending**, it's because it's not allowed to land there. Add a **Toleration**:
+```bash
+kubectl patch deployment ingress-nginx-controller -n ingress-nginx --type='json' -p='[{"op": "add", "path": "/spec/template/spec/tolerations", "value": [{"key": "node-role.kubernetes.io/control-plane", "operator": "Exists", "effect": "NoSchedule"}]}]'
+```
+
+### 3. Summary of Concepts Used:
+*   **hostNetwork**: Makes the pod use the Node's IP and Ports (like port 80) instead of a private container IP.
+*   **nodeSelector**: Forces a pod to run on a specific node (e.g., `controlplane`).
+*   **Toleration**: Allows a pod to run on a Tainted node (e.g., a master/control-plane node).
+
+---
 ```
 
 ```yaml
