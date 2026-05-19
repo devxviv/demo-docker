@@ -528,6 +528,9 @@ kubectl get pods -A | grep -i ingress
 
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
 
+kubectl describe deployment ingress-nginx-controller -n ingress-nginx
+kubectl describe svc ingress-nginx-controller -n ingress-nginx
+
 # Troubleshooting Killercoda: If port 80 is not reachable, patch the controller 
 # to use the host network (this binds port 80 directly to the node):
 kubectl patch deployment ingress-nginx-controller -n ingress-nginx --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/hostNetwork", "value": true}]'
