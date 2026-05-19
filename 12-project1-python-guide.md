@@ -526,6 +526,12 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main
 # to use the host network (this binds port 80 directly to the node):
 kubectl patch deployment ingress-nginx-controller -n ingress-nginx --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/hostNetwork", "value": true}]'
 
+OR
+Run this command to allow traffic to enter any node (including your controlplane) and automatically route internally to node01..
+
+kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{"spec":{"externalTrafficPolicy":"Cluster"}}'
+
+
 ---
 
 ## 🛠 Advanced Ingress Troubleshooting (Multi-Node Clusters)
