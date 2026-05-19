@@ -326,6 +326,12 @@ spec:
 ```
 
 ```bash
+
+kubectl get storageclass
+
+# Verify if any old PVCs or PVs are conflicting:
+kubectl get pvc,pv -n python-demo
+
 # Service MUST be created before the StatefulSet
 kubectl apply -f k8s/postgres-service.yaml
 kubectl apply -f k8s/postgres-deployment.yaml
