@@ -556,7 +556,7 @@ kubectl patch deployment ingress-nginx-controller -n ingress-nginx --type='json'
 *   **Toleration**: Allows a pod to run on a Tainted node (e.g., a master/control-plane node).
 
 ---
-```
+
 
 ```yaml
 # k8s/ingress.yaml
